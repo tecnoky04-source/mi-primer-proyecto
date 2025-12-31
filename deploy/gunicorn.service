@@ -6,9 +6,11 @@ After=network.target
 User=vladtrix
 Group=www-data
 WorkingDirectory=/home/vladtrix/DOCUEXPRESS PAGINA
-Environment=PATH=/home/vladtrix/.venvs/docuexpress/bin
+# Use the project's virtualenv (adjust if your venv path is different)
+Environment=PATH=/home/vladtrix/DOCUEXPRESS PAGINA/.venv/bin
 Environment=RATELIMIT_ENABLED=False
-ExecStart=/home/vladtrix/.venvs/docuexpress/bin/gunicorn --workers 3 --bind unix:/run/gunicorn-docuexpress.sock wsgi:application
+# ExecStart: use the gunicorn from the venv and the WSGI application
+ExecStart=/home/vladtrix/DOCUEXPRESS PAGINA/.venv/bin/gunicorn --workers 3 --bind unix:/run/gunicorn-docuexpress.sock wsgi:application
 
 [Install]
 WantedBy=multi-user.target
