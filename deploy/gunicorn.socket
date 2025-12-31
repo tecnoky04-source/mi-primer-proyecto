@@ -1,0 +1,12 @@
+[Unit]
+Description=Gunicorn socket for DocuExpress
+
+[Socket]
+# Socket file used by the Gunicorn service (systemd will create it)
+ListenStream=/run/gunicorn-docuexpress.sock
+SocketUser=vladtrix
+SocketGroup=www-data
+ListenBacklog=2048
+
+[Install]
+WantedBy=sockets.target
