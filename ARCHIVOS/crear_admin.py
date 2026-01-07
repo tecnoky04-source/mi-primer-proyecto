@@ -1,6 +1,12 @@
 # MEJORA DE CONSISTENCIA: Se asegura que el script utilice el módulo de base de datos correcto.
-from app import create_app
-from database import user_repository
+import sys
+import os
+
+# Agregar el directorio padre al path para imports correctos
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from ARCHIVOS.app import create_app
+from ARCHIVOS.database import user_repository
 import getpass
 
 def main():
