@@ -8,7 +8,6 @@
     <h1 class="display-5">{{ titulo }}</h1>
 </header>
 
-<!-- Mensajes Flash -->
 {% include 'flash_messages.html' %}
 
 <div class="card shadow-sm" style="max-width: 600px; margin: auto;">
@@ -16,10 +15,19 @@
         <form method="post" novalidate>
             {{ form.hidden_tag() }}
 
-            {{ render_field(form.username) }}
+            {{ render_field(form.username, placeholder="ej. juan.perez") }}
+
             {{ render_field(form.role) }}
-            {{ render_field(form.password, placeholder="Dejar en blanco para no cambiar") }}
-            {{ render_field(form.confirm_password, placeholder="Repite la contraseña si la cambias") }}
+
+            <hr class="my-4">
+            <p class="text-muted small">
+                <i class="bi bi-info-circle me-1"></i>
+                Deja los campos de contraseña vacíos si no deseas cambiarla.
+            </p>
+
+            {{ render_field(form.password, placeholder="Nueva contraseña (opcional)") }}
+            
+            {{ render_field(form.confirm_password, placeholder="Confirmar nueva contraseña") }}
 
             <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
                 <a href="{{ url_for('auth.listar_usuarios') }}" class="btn btn-secondary me-md-2">Cancelar</a>

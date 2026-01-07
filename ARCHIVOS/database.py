@@ -35,7 +35,7 @@ class UserRepository:
 
     def get_by_id(self, user_id):
         """Gets a user by id."""
-        return User.query.get(user_id)
+        return db.session.get(User, user_id)
 
     def get_all_except(self, admin_user_id):
         """Gets all users except the given admin."""

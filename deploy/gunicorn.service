@@ -5,12 +5,10 @@ After=network.target
 [Service]
 User=vladtrix
 Group=www-data
-WorkingDirectory=/home/vladtrix/DOCUEXPRESS PAGINA
-# Use the project's virtualenv (adjust if your venv path is different)
-Environment=PATH=/home/vladtrix/DOCUEXPRESS PAGINA/.venv/bin
+# The project path contains a space; to avoid systemd parsing issues we use a shell wrapper
+# ExecStart will cd into the project dir and exec the venv gunicorn.
 Environment=RATELIMIT_ENABLED=False
-# ExecStart: use the gunicorn from the venv and the WSGI application
-ExecStart=/home/vladtrix/DOCUEXPRESS PAGINA/.venv/bin/gunicorn --workers 3 --bind unix:/run/gunicorn-docuexpress.sock wsgi:application
+ExecStart=/bin/bash -c 'cd "/home/vladtrix/DOCUEXPRESS PAGINA" && exec "/home/vladtrix/DOCUEXPRESS PAGINA/.venv/bin/gunicorn" --workers 3 --bind unix:/run/gunicorn-docuexpress.sock wsgi:application'
 
 [Install]
 WantedBy=multi-user.target

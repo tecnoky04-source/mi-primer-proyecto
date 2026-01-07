@@ -7,17 +7,8 @@
     <h1 class="display-5">Configuración de Costos por Trámite</h1>
     <p class="lead">Define aquí el costo por defecto que pagas a tu proveedor por cada tipo de trámite. Esto autocompletará el campo "Costo" al registrar un nuevo trámite.</p>
 
-    <!-- Mensajes Flash -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-          </div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
+    <!-- MEJORA DE CONSISTENCIA: Se utiliza un include para renderizar los mensajes flash. -->
+    {% include 'flash_messages.html' %}
 </header>
 
 <div class="card shadow-sm" style="max-width: 700px; margin: auto;">
@@ -26,7 +17,7 @@
     </div>
     <div class="card-body">
         <form action="{{ url_for('config.guardar_costos') }}" method="post">
-            {{ form.hidden_tag() }}
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             {% for tramite in tramites %}
             <div class="row g-3 align-items-center mb-3">
                 <div class="col-sm-5">
@@ -53,8 +44,8 @@
         <p>Si has registrado trámites antes de definir sus costos, estos aparecerán con un costo de $0.00.</p>
         <p>Usa este botón para aplicar los costos guardados arriba a todos los trámites antiguos que tengan costo cero. Esta acción no se puede deshacer.</p>
         <form action="{{ url_for('config.actualizar_costos_viejos') }}" method="post" onsubmit="return confirm('¿Estás seguro de que quieres actualizar los costos de todos los trámites anteriores? Esta acción es permanente.');">
-            {{ form.hidden_tag() }}
-            <button type="submit" class="btn btn-warning w-100">Actualizar Trámites Anteriores</button>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <button type="submit" name="actualizar_viejos" value="1" class="btn btn-warning w-100">Actualizar Trámites Anteriores</button>
         </form>
     </div>
 </div>
@@ -65,23 +56,22 @@
     </div>
     <div class="card-body">
         <p>Sube el logo de tu empresa. Se mostrará en la barra de navegación y en los reportes PDF.</p>
-        <form action="{{ url_for('config.manage_logo') }}" method="post" enctype="multipart/form-data" class="mb-3">
-            <input type="hidden" name="action" value="upload">
-            {{ form.hidden_tag() }}
+
+        <!-- Formulario para subir logo -->
+        <form action="{{ url_for('config.manage_logo') }}" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="mb-3">
                 <label for="logo" class="form-label">Seleccionar archivo de logo (se recomienda formato PNG con fondo transparente):</label>
                 <input class="form-control" type="file" id="logo" name="logo" accept="image/png, image/jpeg">
             </div>
-            <button type="submit" class="btn btn-info w-100">Subir o Cambiar Logo</button>
+            <button type="submit" name="action" value="upload" class="btn btn-info w-100 mb-2">Subir o Reemplazar Logo</button>
         </form>
 
+        <!-- Botón de eliminación, visible solo si el logo existe -->
         {% if logo_path %}
-        <hr>
-        <p class="text-muted">Ya tienes un logo. Si deseas eliminarlo, usa el siguiente botón.</p>
-        <form action="{{ url_for('config.manage_logo') }}" method="post" onsubmit="return confirm('¿Estás seguro de que quieres eliminar tu logo? Esta acción es permanente.');">
-            <input type="hidden" name="action" value="delete">
-            {{ form.hidden_tag() }}
-            <button type="submit" class="btn btn-danger w-100"><i class="bi bi-trash"></i> Eliminar Logo Actual</button>
+        <form action="{{ url_for('config.manage_logo') }}" method="post" onsubmit="return confirm('¿Estás seguro de que quieres eliminar tu logo?');" class="mt-3">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <button type="submit" name="action" value="delete" class="btn btn-danger w-100">Eliminar Logo Actual</button>
         </form>
         {% endif %}
     </div>

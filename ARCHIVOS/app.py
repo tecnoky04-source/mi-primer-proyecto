@@ -50,6 +50,13 @@ except ImportError:
     # type: ignore[import]
     pass  # Para Pylance: asegúrate de que el entorno es correcto
 
+# Compresión GZIP para reducir transferencia de datos
+try:
+    from flask_compress import Compress
+    FLASK_COMPRESS_AVAILABLE = True
+except ImportError:
+    FLASK_COMPRESS_AVAILABLE = False
+
 load_dotenv()
 
 # Importamos la clase DB y User
@@ -111,10 +118,19 @@ class Config:
     RATELIMIT_DEFAULT = os.environ.get('RATELIMIT_DEFAULT', '1000 per day;200 per hour')
     RATELIMIT_API = os.environ.get('RATELIMIT_API', '500 per day;100 per hour')
 
-    # Configuración de caché multicapa
+    # Configuración de caché multicapa (OPTIMIZADO para PythonAnywhere gratis)
     CACHE_REDIS_URL = os.environ.get('CACHE_REDIS_URL', 'redis://localhost:6379/0')
     CACHE_DEFAULT_TIMEOUT = int(os.environ.get('CACHE_DEFAULT_TIMEOUT', '300'))
-    CACHE_TYPE = 'redis'
+    CACHE_TYPE = 'SimpleCache'  # Mejor para PythonAnywhere gratis (sin Redis)
+    CACHE_THRESHOLD = 500  # Máximo elementos en caché
+    
+    # Configuración de compresión (reduce transferencia 60-80%)
+    COMPRESS_MIMETYPES = [
+        'text/html', 'text/css', 'text/xml', 'text/javascript',
+        'application/json', 'application/javascript', 'application/xml'
+    ]
+    COMPRESS_LEVEL = 6  # Balance entre compresión y CPU
+    COMPRESS_MIN_SIZE = 500  # Solo comprimir si > 500 bytes
     
     @staticmethod
     def init_app(app):
@@ -166,6 +182,11 @@ def create_app(config_class=Config):
 
     app = Flask(__name__)
     app.config.from_object(config_class)
+
+    # ✅ 0. Inicializar Compresión GZIP PRIMERO (antes de cualquier ruta)
+    if FLASK_COMPRESS_AVAILABLE:
+        Compress(app)
+        logging.info("✅ Compresión GZIP habilitada")
 
     # ✅ 1. Inicializar configuración PRIMERO
     config_class.init_app(app)
@@ -232,7 +253,7 @@ def create_app(config_class=Config):
         logging.info("⚠️ Rate Limiting deshabilitado")
         app.limiter = None
 
-    # ✅ 4. Inicializar Backup Manager
+    # ✅ 5. Inicializar Backup Manager
     backup_manager.init_app(app)
 
     # ✅ 5. Ejecutar migración de BD ANTES de registrar blueprints y contextos
@@ -279,7 +300,7 @@ def setup_login_manager(app):
     @login_manager.user_loader
     def load_user(user_id):
         """Carga un usuario desde la base de datos."""
-        return User.query.get(int(user_id))
+        return db.session.get(User, int(user_id))
 
 
 # ==================== CONTEXT PROCESSORS ====================
@@ -329,9 +350,9 @@ def register_context_processors(app):
     def inject_impersonation_status():
         """Inyecta el estado de suplantación de identidad en los templates."""
         if 'original_user_id' in session:
-            from models import User # Importación local para evitar dependencia circular
+            from ARCHIVOS.models import User # Importación local para evitar dependencia circular
             viewing_user_id = session.get('viewing_user_id')
-            user = User.query.get(viewing_user_id)
+            user = db.session.get(User, viewing_user_id)
             if user:
                 return {
                     'is_impersonating': True,

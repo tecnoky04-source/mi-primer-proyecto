@@ -1,48 +1,30 @@
-{% extends "base_auth.html" %}
+{% extends 'base_auth.html' %}
 
-{% block title %}Iniciar Sesión - {{ super() }}{% endblock %}
+{% block title %}Iniciar Sesión - DocuExpress{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5 col-xl-4">
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-4">
-                <div class="text-center mb-4">
-                    <h2 class="fw-bold">DocuExpress</h2>
-                    <p class="text-body-secondary">Bienvenido de nuevo</p>
-                </div>
-
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
-
-                <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
-                    {{ form.hidden_tag() }}
-                    <div class="mb-3">
-                        {{ form.username.label(class="form-label") }}
-                        {{ form.username(class="form-control", placeholder="Ingresa tu usuario") }}
-                    </div>
-                    <div class="mb-3">
-                        {{ form.password.label(class="form-label") }}
-                        {{ form.password(class="form-control", placeholder="Ingresa tu contraseña") }}
-                    </div>
-                    <div class="mb-3 form-check">
-                        {{ form.remember(class="form-check-input") }}
-                        {{ form.remember.label(class="form-check-label") }}
-                    </div>
-                    <div class="d-grid mt-4">
-                        {{ form.submit(class="btn btn-primary") }}
-                    </div>
-                </form>
-            </div>
-        </div>
+<div class="auth-container">
+    <div class="auth-header">
+        <h2>DocuExpress</h2>
+        <p class="text-muted">Bienvenido de nuevo</p>
     </div>
+
+    <!-- MEJORA DE CONSISTENCIA: Se utiliza un include para renderizar los mensajes flash. -->
+    {% include 'flash_messages.html' %}
+
+    <form method="POST" action="{{ url_for('auth.login') }}">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.username.label(class="form-label") }}
+            {{ form.username(class="form-control", placeholder="Ingresa tu usuario") }}
+        </div>
+        <div class="mb-3">
+            {{ form.password.label(class="form-label") }}
+            {{ form.password(class="form-control", placeholder="Ingresa tu contraseña") }}
+        </div>
+        <div class="d-grid">
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
 </div>
 {% endblock %}

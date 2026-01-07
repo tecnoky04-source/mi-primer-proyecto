@@ -1,0 +1,98 @@
+{# Componente de paginación reutilizable #}
+{# 
+   Parámetros:
+   - current_page: número de página actual
+   - total_pages: total de páginas
+   - endpoint: nombre del endpoint para generar URLs
+   - endpoint_args: diccionario con argumentos adicionales para el endpoint
+   - use_htmx: si es True, usa hx-get en lugar de href
+   - htmx_target: selector del target para HTMX
+#}
+{% macro render_pagination(current_page, total_pages, endpoint, endpoint_args={}, use_htmx=False, htmx_target='') %}
+{% if total_pages > 1 %}
+<nav aria-label="Navegación de páginas">
+    <ul class="pagination justify-content-center mb-0">
+        {# Botón Anterior #}
+        <li class="page-item {% if current_page == 1 %}disabled{% endif %}">
+            {% if use_htmx %}
+            <a class="page-link" 
+               hx-get="{{ url_for(endpoint, page=current_page - 1, **endpoint_args) }}" 
+               hx-target="{{ htmx_target }}" 
+               hx-swap="outerHTML"
+               aria-label="Anterior">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+            {% else %}
+            <a class="page-link" 
+               href="{{ url_for(endpoint, page=current_page - 1, **endpoint_args) }}"
+               aria-label="Anterior">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+            {% endif %}
+        </li>
+        
+        {# Números de página #}
+        {% set start_page = [1, current_page - 2]|max %}
+        {% set end_page = [total_pages, current_page + 2]|min %}
+        
+        {% if start_page > 1 %}
+        <li class="page-item">
+            {% if use_htmx %}
+            <a class="page-link" hx-get="{{ url_for(endpoint, page=1, **endpoint_args) }}" hx-target="{{ htmx_target }}" hx-swap="outerHTML">1</a>
+            {% else %}
+            <a class="page-link" href="{{ url_for(endpoint, page=1, **endpoint_args) }}">1</a>
+            {% endif %}
+        </li>
+        {% if start_page > 2 %}
+        <li class="page-item disabled"><span class="page-link">...</span></li>
+        {% endif %}
+        {% endif %}
+        
+        {% for page_num in range(start_page, end_page + 1) %}
+        <li class="page-item {% if page_num == current_page %}active{% endif %}">
+            {% if use_htmx %}
+            <a class="page-link" 
+               hx-get="{{ url_for(endpoint, page=page_num, **endpoint_args) }}" 
+               hx-target="{{ htmx_target }}" 
+               hx-swap="outerHTML">{{ page_num }}</a>
+            {% else %}
+            <a class="page-link" href="{{ url_for(endpoint, page=page_num, **endpoint_args) }}">{{ page_num }}</a>
+            {% endif %}
+        </li>
+        {% endfor %}
+        
+        {% if end_page < total_pages %}
+        {% if end_page < total_pages - 1 %}
+        <li class="page-item disabled"><span class="page-link">...</span></li>
+        {% endif %}
+        <li class="page-item">
+            {% if use_htmx %}
+            <a class="page-link" hx-get="{{ url_for(endpoint, page=total_pages, **endpoint_args) }}" hx-target="{{ htmx_target }}" hx-swap="outerHTML">{{ total_pages }}</a>
+            {% else %}
+            <a class="page-link" href="{{ url_for(endpoint, page=total_pages, **endpoint_args) }}">{{ total_pages }}</a>
+            {% endif %}
+        </li>
+        {% endif %}
+        
+        {# Botón Siguiente #}
+        <li class="page-item {% if current_page == total_pages %}disabled{% endif %}">
+            {% if use_htmx %}
+            <a class="page-link" 
+               hx-get="{{ url_for(endpoint, page=current_page + 1, **endpoint_args) }}" 
+               hx-target="{{ htmx_target }}" 
+               hx-swap="outerHTML"
+               aria-label="Siguiente">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+            {% else %}
+            <a class="page-link" 
+               href="{{ url_for(endpoint, page=current_page + 1, **endpoint_args) }}"
+               aria-label="Siguiente">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+            {% endif %}
+        </li>
+    </ul>
+</nav>
+{% endif %}
+{% endmacro %}

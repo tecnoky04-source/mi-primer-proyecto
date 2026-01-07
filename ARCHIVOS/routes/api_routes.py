@@ -11,37 +11,27 @@ api_bp = Blueprint('api', __name__, url_prefix='/api')
 from flask_caching import Cache
 from flask import current_app
 
+
+def _get_cache_decorator(timeout=300):
+    """Devuelve un decorador cached si la extensión de caché está disponible.
+
+    Si no hay un objeto de caché con método `cached`, devuelve un decorador identidad
+    que deja la función sin cambios (fallback seguro en desarrollo).
+    """
+    cache_obj = getattr(current_app, 'cache', None) or current_app.extensions.get('cache')
+    if cache_obj and hasattr(cache_obj, 'cached'):
+        return cache_obj.cached(timeout=timeout)
+
+    def _identity(f):
+        return f
+
+    return _identity
+
+
 @api_bp.route('/dashboard-charts')
 @login_required
 def dashboard_charts_data():
-    cache = current_app.extensions.get('cache')
-    @cache.cached(timeout=300)
-    def get_data():
-        # ...existing code...
-        # Rate limiting desactivado
-        effective_user_id = get_effective_user_id()
-        fecha_inicio = request.args.get('fecha_inicio')
-        fecha_fin = request.args.get('fecha_fin')
-        top_papelerias = papeleria_repository.get_top_by_ganancia(
-            effective_user_id, 
-            limit=10,
-            fecha_inicio=fecha_inicio,
-            fecha_fin=fecha_fin
-        )
-        top_papelerias_data = {'labels': [p['nombre'] for p in top_papelerias], 'data': [p['ganancia_total'] or 0 for p in top_papelerias]}
-        summary_result = tramite_repository.get_monthly_summary(
-            effective_user_id,
-            fecha_inicio=fecha_inicio,
-            fecha_fin=fecha_fin
-        )
-        # ...continúa la lógica original...
-        return jsonify({
-            'top_papelerias': top_papelerias_data,
-            'monthly_summary': summary_result
-        })
-    return get_data()
-    # Rate limiting desactivado
-    
+    """Endpoint para obtener datos de gráficos del dashboard."""
     effective_user_id = get_effective_user_id()
     
     # Obtener parámetros de fecha si existen
@@ -68,9 +58,9 @@ def dashboard_charts_data():
     monthly_summary = {
         'labels': [row['month'] for row in monthly_summary_data],
         'ingresos': [row['ingresos'] for row in monthly_summary_data],
-        'costos': [row['gastos'] for row in monthly_summary_data],  # Map 'gastos' to 'costos' for frontend
+        'costos': [row['gastos'] for row in monthly_summary_data],
         'ganancias': [row['ganancias'] for row in monthly_summary_data],
-        'totals': summary_result['totals']  # Incluir los totales en la respuesta
+        'totals': summary_result['totals']
     }
 
     # 3. Distribución de Trámites

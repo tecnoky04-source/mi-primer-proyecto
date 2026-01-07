@@ -27,3 +27,8 @@ def main():
             # Usamos el repositorio para crear el usuario
             user_repository.create(username, password, role='admin')
             print(f"\n✅ Usuario Administrador '{username}' creado con éxito.")
+        except Exception as e:
+            print(f"\n❌ Error al crear el usuario: {e}")
+
+if __name__ == "__main__":
+    main()
