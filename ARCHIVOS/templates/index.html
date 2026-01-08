@@ -18,8 +18,12 @@
 <!-- Encabezado -->
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0 fw-bold">Panel de Control</h4>
-    
     <!-- Botón de exportación a PDF eliminado por requerimiento -->
+</div>
+
+<!-- Contenedor de mensajes flash para máxima compatibilidad móvil/desktop -->
+<div id="flash-container">
+    {% include 'flash_messages.html' %}
 </div>
 
 <!-- Contenedor para el dashboard que se actualizará dinámicamente -->
@@ -505,16 +509,13 @@
         // Fetch con reintentos
         async fetchChartDataWithRetry(attempt = 1) {
             try {
-                // Construir URL con parámetros de fecha si existen
+                // Construir URL con parámetros de fecha SIEMPRE (para todos los rangos)
                 let url = "{{ url_for('api.dashboard_charts_data') }}";
-                
-                // Agregar parámetros de fecha personalizada si están definidos
-                if (customStartDate && customEndDate) {
-                    url += '?fecha_inicio=' + encodeURIComponent(customStartDate) + 
-                           '&fecha_fin=' + encodeURIComponent(customEndDate);
-                    console.log('📅 Aplicando filtro personalizado:', customStartDate, 'a', customEndDate);
-                }
-                
+                const fechaInicio = getStartDate();
+                const fechaFin = getEndDate();
+                url += '?fecha_inicio=' + encodeURIComponent(fechaInicio) + '&fecha_fin=' + encodeURIComponent(fechaFin);
+                console.log('📅 Aplicando filtro de fechas:', fechaInicio, 'a', fechaFin);
+
                 const response = await fetch(url, {
                     headers: { 'Cache-Control': 'no-cache' },
                     method: 'GET'

@@ -30,7 +30,7 @@
  <div class="row">
     <div class="col-md-6 mb-3">
         {{ form_tramite.cantidad.label(class="form-label") }}
-        {{ form_tramite.cantidad(class="form-control" + (" is-invalid" if form_tramite.cantidad.errors else "")) }}
+        {{ form_tramite.cantidad(class="form-control" + (" is-invalid" if form_tramite.cantidad.errors else ""), type="number", min="1", step="1") }}
         {% for error in form_tramite.cantidad.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
     </div>
     <div class="col-md-6 mb-3">
